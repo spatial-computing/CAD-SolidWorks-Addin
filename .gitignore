@@ -243,3 +243,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+# Adding stuff to make sure parallel versions of addin can be build and run
+SwIntegrate.cs
+AssemblyInfo.cs
