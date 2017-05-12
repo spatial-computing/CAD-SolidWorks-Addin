@@ -14,7 +14,6 @@ using SolidWorks.Interop.swpublished;
 using SolidWorksTools;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
-
 using System.Runtime.Remoting;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -29,7 +28,6 @@ namespace TestSolidWorksAddin
    
     public partial class SWTaskpaneHost : UserControl
     {
-      
         public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_AJ";
         public SldWorks mSWApplication;
         System.IO.StreamWriter file;
@@ -39,6 +37,8 @@ namespace TestSolidWorksAddin
       //      button1.Click += Button_Click;
         }
 
+
+        
   private List<SketchVO> getAllSketches(PartDoc swPart)
         {
             List<SketchVO> sketches = new List<SketchVO>();
@@ -46,6 +46,7 @@ namespace TestSolidWorksAddin
             Feature swFeat = (Feature)swPart.FirstFeature();
             while (swFeat != null)
             {
+                String featureName = swFeat.Name;
                 if (swFeat.GetTypeName2() == "HoleWzd")
                 {
                     Feature subFeat = swFeat.GetFirstSubFeature();
@@ -69,8 +70,141 @@ namespace TestSolidWorksAddin
                     sketches.Add(skVO);
                 }
                 swFeat = swFeat.GetNextFeature();
+           
+
+     
             }
             return sketches;
+        }
+
+        private List<SketchBodyVO> getAllSketchesWithBody(PartDoc swPart)
+        {
+            List<SketchBodyVO> sketchBodies = new List<SketchBodyVO>();
+            
+            ModelDoc2 swModel = (ModelDoc2)swPart;
+          
+            Feature swFeat = (Feature)swPart.FirstFeature();
+            while (swFeat != null)
+            {
+                List<SketchGeometry> sketchBodyList = new List<SketchGeometry>();
+                SketchBodyVO sketchBody = new SketchBodyVO();
+                if (swFeat.GetTypeName2() == "HoleWzd")
+                {
+                    object[] parents = (object[])swFeat.GetParents();
+                    if (parents != null)
+                    {
+                        foreach (Feature parent in parents)
+                        {
+                            object[] facesArray = parent.GetFaces();
+                            if (facesArray != null && facesArray.Length > 0)
+                            {
+                                Face parentFace = (Face)facesArray[0];
+                                if (parentFace != null)
+                                {
+                                    //  Feature p = parent.GetFaces();
+                                    Body2 body = parentFace.GetBody();
+                                    if (body != null)
+                                    {
+                                        //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
+                                        sketchBodyList.Add(getBodyFromSketch(body, swModel));
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    Feature subFeat = swFeat.GetFirstSubFeature();
+                    while (subFeat != null && subFeat.GetTypeName2() == "ProfileFeature")
+                    {
+
+                        sketchBody.name = subFeat.Name;
+                        sketchBody.swSketch = (Sketch)subFeat.GetSpecificFeature2();
+                        sketchBody.sketchGeometry = getGeometryFromSketch(sketchBody);
+
+                        //Add code to get All parent body
+  
+            
+                        sketchBody.sketchBodies = sketchBodyList;
+                        sketchBodies.Add(sketchBody);
+                        subFeat = subFeat.GetNextSubFeature();
+                    }
+                }
+                else
+                        if (swFeat.GetTypeName2() == "ProfileFeature")
+                {
+
+                    // SketchVO skVO = new SketchVO();
+                    sketchBody.name = swFeat.Name;
+                    sketchBody.swSketch = (Sketch)swFeat.GetSpecificFeature2();
+                    sketchBody.sketchGeometry = getGeometryFromSketch(sketchBody);
+
+                    /*        Feature parents = swFeat.GetOwnerFeature();
+                            if (parents != null)
+                            {
+                              //  SwConst.swSelectType_e
+
+                              /*  if (selected)
+                                {
+                                //    SelectionMgr swSelMgr = swModel.SelectionManager;
+                                    swSelMgr.GetSelectedObjectType(1);
+                                   // swModel.ClearSelection2(true);
+                                  //  dynamic v = b.get;
+
+                                }*/
+                    /*       object[] facesArray = parents.GetFaces();
+                           //Add code to get All parent body
+                           for (int i = 0; i < facesArray.Length-(facesArray.Length - 1); i++)
+                           {
+                               Face parentFace = (Face)facesArray[i];
+
+
+                              // Feature p2 = swFeat.GetOwnerFeature();
+                               if (parentFace != null)
+                               {
+                                 //  Feature p = parent.GetFaces();
+                                   Body2 body = parentFace.GetBody();
+                                   if (body != null)
+                                          {
+                                       //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
+                                       sketchBodyList.Add(getBodyFromSketch(body, swModel));
+
+                                    }
+                               }
+                           }
+                       }*/
+                    object[] parents = (object[])swFeat.GetParents();
+                    if (parents != null)
+                    {
+                        foreach (Feature parent in parents)
+                        {
+                            object[] facesArray = parent.GetFaces();
+                            if (facesArray != null && facesArray.Length > 0)
+                            {
+                                Face parentFace = (Face)facesArray[0];
+                                if (parentFace != null)
+                                {
+                                    //  Feature p = parent.GetFaces();
+                                    Body2 body = parentFace.GetBody();
+                                    if (body != null)
+                                    {
+                                        //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
+                                        sketchBodyList.Add(getBodyFromSketch(body, swModel));
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    sketchBody.sketchBodies = sketchBodyList;
+                    sketchBodies.Add(sketchBody);
+
+                }
+                
+                swFeat = swFeat.GetNextFeature();
+            }
+            return sketchBodies;
         }
 
         private SketchVO getSketchWithName(PartDoc swPart,String sketchName)
@@ -172,7 +306,7 @@ namespace TestSolidWorksAddin
        
             swSkRelMgr = swSketch.RelationManager;
 
-
+       
 
             vSkRelArr = (object[])swSkRelMgr.GetRelations((int)swSketchRelationFilterType_e.swAll);
             if ((vSkRelArr == null))
@@ -323,6 +457,176 @@ namespace TestSolidWorksAddin
             }
             return skVO;
            
+        }
+
+        private SketchVO getRelationsFromSketchWithLog(SketchVO skVO)
+        {
+            SldWorks swApp = mSWApplication;
+            ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
+
+            SelectData swSelData = null;
+            Sketch swSketch = skVO.swSketch;
+            SketchRelationManager swSkRelMgr = null;
+            SketchRelation swSkRel = null;
+            DisplayDimension dispDim = null;
+            object[] vSkRelArr = null;
+            int[] vEntTypeArr = null;
+            object[] vEntArr = null;
+            object[] vDefEntArr = null;
+            SketchSegment swSkSeg = null;
+            SketchPoint swSkPt = null;
+            int i = 0;
+            int j = 0;
+            bool bRet = false;
+
+            swSkRelMgr = swSketch.RelationManager;
+
+            System.IO.StreamWriter logFile = new System.IO.StreamWriter(swModel.GetPathName() + ".relationsLog");
+
+            vSkRelArr = (object[])swSkRelMgr.GetRelations((int)swSketchRelationFilterType_e.swAll);
+            if ((vSkRelArr == null))
+            {
+                logFile.WriteLine("No Relations found");
+
+                return skVO;
+            }
+
+            foreach (SketchRelation vRel in vSkRelArr)
+            {
+                RelationVO skRel = new RelationVO();
+                swSkRel = (SketchRelation)vRel;
+
+
+
+                skRel.typeName = Enum.GetName(typeof(swConstraintType_e), swSkRel.GetRelationType());
+
+                logFile.WriteLine("    Relation(" + i + ")");
+                logFile.WriteLine("      Type         = " + swSkRel.GetRelationType());
+                skRel.type = swSkRel.GetRelationType();
+
+                //Dimensions need to check if required
+                dispDim = (DisplayDimension)swSkRel.GetDisplayDimension();
+                if (dispDim != null)
+                {
+                    skRel.dimensionValue = dispDim.GetDimension().GetSystemValue2(""); ;
+                    logFile.WriteLine("      Display dimension         = " + Enum.GetName(typeof(swDimensionType_e), dispDim.GetType()) + " " + dispDim.GetDimension().GetSystemValue2(""));
+
+                }
+
+                vEntTypeArr = (int[])swSkRel.GetEntitiesType();
+                vEntArr = (object[])swSkRel.GetEntities();
+
+                vDefEntArr = (object[])swSkRel.GetDefinitionEntities2();
+                if ((vDefEntArr == null))
+                {
+                }
+                else
+                {
+                    logFile.WriteLine("    Number of definition entities in this relation: " + vDefEntArr.GetUpperBound(0));
+                }
+
+                if ((vEntTypeArr != null) & (vEntArr != null))
+                {
+
+                    if (vEntTypeArr.GetUpperBound(0) == vEntArr.GetUpperBound(0))
+                    {
+                        j = 0;
+
+                        foreach (swSketchRelationEntityTypes_e vType in vEntTypeArr)
+                        {
+                            SketchRelationEntityVO entity = new SketchRelationEntityVO();
+                            entity.typeName = "" + vType;
+                            logFile.WriteLine("        EntType    = " + vType);
+
+                            entity.type = (int)vType;
+
+                            switch (vType)
+                            {
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Unknown:
+                                    logFile.WriteLine("          Not known");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_SubSketch:
+                                    logFile.WriteLine("SubSketch");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Point:
+                                    swSkPt = (SketchPoint)vEntArr[j];
+
+                                    //  Debug.Assert((swSkPt != null));
+
+                                    logFile.WriteLine("          SkPoint ID = [" + ((int[])(swSkPt.GetID()))[0] + ", " + ((int[])(swSkPt.GetID()))[1] + "]");
+                            
+                                    entity.name = swSkPt.X + "," + swSkPt.Y + "," + swSkPt.Z;
+                                    entity.sketchName = skVO.name;
+                                    entity.id = swModel.Extension.GetPersistReference3(swSkPt);
+                                    bRet = swSkPt.Select4(false, swSelData);
+                           
+                                    break;
+
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Line:
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Arc:
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Ellipse:
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Parabola:
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Spline:
+
+                                    swSkSeg = (SketchSegment)vEntArr[j];
+                                    Sketch sk = (Sketch)swSkSeg.GetSketch();
+                                    // sk.
+                                    logFile.WriteLine("          Name = " + swSkSeg.GetName() + " SkSeg   ID = [" + ((int[])(swSkSeg.GetID()))[0] + ", " + ((int[])(swSkSeg.GetID()))[1] + "]");
+                                    //entity.id = "[" + ((int[])(swSkSeg.GetID()))[0] + ", " + ((int[])(swSkSeg.GetID()))[1] + "]";
+                                    entity.id = swModel.Extension.GetPersistReference3(swSkSeg);
+                                    entity.name = swSkSeg.GetName();
+                                    entity.sketchName = skVO.name;
+                                    bRet = swSkSeg.Select4(false, swSelData);
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Hatch:
+                                    logFile.WriteLine("Hatch");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Text:
+                                    logFile.WriteLine("Text");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Plane:
+                                    logFile.WriteLine("Plane");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Cylinder:
+                                    logFile.WriteLine("Cylinder");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Sphere:
+                                    logFile.WriteLine("Sphere");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Surface:
+                                    logFile.WriteLine("Surface");
+
+                                    break;
+                                case swSketchRelationEntityTypes_e.swSketchRelationEntityType_Dimension:
+                                    logFile.WriteLine("Dimension");
+
+                                    break;
+                                default:
+                                    logFile.WriteLine("Something else");
+
+                                    break;
+                            }
+
+                            j = j + 1;
+
+                            skRel.entities.Add(entity);
+                        }
+                    }
+                }
+
+                i = i + 1;
+                skVO.relations.Add(skRel);
+            }
+            return skVO;
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -751,52 +1055,7 @@ namespace TestSolidWorksAddin
 
             }
             swSketchManager.InsertSketch(true);
-            /*           try
-                {
-
-                    //                SketchPoint skPoint = swModel.SketchManager.CreatePoint(0.009, 0.03, 0);
-
-
-
-                    SketchPoint objPersis = (SketchPoint)swModel.Extension.GetObjectByPersistReference3(b, out errorCode);
-                    SelectData sel;
-                    objPersis.Select4(true, null);
-                  //  skPoint.Select4(true, null);
-                      swApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swInputDimValOnCreate, false);
-                    swModel.AddHorizontalDimension2(0.009, 0.03, 0);
-                    swModel.ClearSelection();
-
-               //     swModel.rela
-
-                    //   skPoint.Select4(true, null);
-                    //   swModel.EditDelete();
-                    objPersis.Select4(true, null);
-                    //       objPersis.Select4(true, null);
-                    //       skPoint.Select4(true, null);
-                    swModel.AddVerticalDimension2(0.009, 0.03, 0);
-                    swModel.ClearSelection();
-                    //   swModel.AddDimension2(0.009, 0.03, 0);
-
-
-                    //   swModel.Extension.AddDimension(0.009, 0.03, 0, (int) swSmartDimensionDirection_e.swSmartDimensionDirection_Right);
-                    //swModel.Extension.SelectByID2(null, null, 0.009, 0.03, 0, true, 0, null, (int)swSelectOption_e.swSelectOptionDefault);
-
-
-                    //   skPoint.Select4(true, null);
-
-
-
-                    //byte[] b2 = new byte[] { 40, 35, 0, 0, 6, 0, 0, 0, 255, 254, 255, 0, 0, 0, 0, 0, 44, 0, 0, 0, 255, 255, 1, 0, 13, 0, 115, 103, 80, 111, 105, 110, 116, 72, 97, 110, 100, 108, 101, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0 };
-                    //objPersis = (SketchPoint)swModel.Extension.GetObjectByPersistReference3(b, out errorCode);
-                    //objPersis.Select4(true, null);
-
-                }
-
-                catch (Exception e2)
-                {
-                    SketchSegment objPersis = (SketchSegment)swModel.Extension.GetObjectByPersistReference3(b,out errorCode);
-                    objPersis.Select4(true, null);
-                }*/
+      
 
         }
 
@@ -812,58 +1071,25 @@ namespace TestSolidWorksAddin
             swSkMgr = swModel.SketchManager;
             SolidWorks.Interop.sldworks.View view = null;
             swPart = (PartDoc)swModel;
+            
+            /*  object[] bodies = swPart.GetBodies2((int)SwConst.swBodyType_e.swSolidBody, true);
 
-            object[] bodies = swPart.GetBodies2((int)SwConst.swBodyType_e.swSolidBody, true);
-
-            List<SketchGeometry> skgListAll = new List<SketchGeometry>();
-            SketchGeometry skG = new SketchGeometry();
-            List<LineVO> lines = new List<LineVO>();
-            List<PointVO> points = new List<PointVO>();
-            foreach (Body2 body in bodies)
-            {
-                dynamic vertices = body.GetVertices();
-                dynamic edges = body.GetEdges();
-
-                foreach (Vertex vertex in vertices)
-                {
-
-                    PointVO point = getVertexPoint(swModel, vertex.GetPoint());
-                    points.Add(point);
-                }
-
-                skG.points = points;
-
-                foreach (Edge edge in edges)
-                {
-                    Vertex startVertex = edge.GetStartVertex();
-                    Vertex endVertex = edge.GetEndVertex();
-                    LineVO line = new LineVO();
-                    line.start = getVertexPoint(swModel, startVertex.GetPoint());
-                    line.end = getVertexPoint(swModel, endVertex.GetPoint());
-                    line.name = edge.GetID().ToString();
-                    line.key = line.start.key+"##" + line.end.key+"##";
-                    lines.Add(line);
-                }
-                skG.lines = lines;
+              List<SketchGeometry> skgListAll = new List<SketchGeometry>();
 
 
-            }
+              foreach (Body2 body in bodies)
+              {
+                  skgListAll.Add(getBodyFromSketch(body,swModel));
 
-            skgListAll.Add(skG);
-
-            writeToFile(swModel, ".BodyDetails.json", skgListAll);
+              }
 
 
-            view = swSelMgr.GetSelectedObject6(1, -1);
-            // view.GetVisibleComponents();
-            if (view != null) {
-                int noOfBodies = view.GetBodiesCount();
-                if (noOfBodies > 0)
-                {
-                    object[] arrBody = view.Bodies;
-                }
-            }
-            List<SketchVO> sketches = getAllSketches(swPart);
+
+              writeToFile(swModel, ".BodyDetails.json", skgListAll);*/
+
+            getAllSketchesWithBody(swPart);
+
+     /*       List<SketchVO> sketches = getAllSketches(swPart);
             List<SketchGeometry> skgList = new List<SketchGeometry>();
             for (int i = 0; i < sketches.Count; i++)
             {
@@ -874,27 +1100,30 @@ namespace TestSolidWorksAddin
             var json = new JavaScriptSerializer().Serialize(skgList);
 
             file.WriteLine(json);
-            file.Close();
+            file.Close();*/
 
             // 2. match lines
-            SketchGeometry skg = skgList[0];
-            
-            foreach(PointVO point in skg.points) {
-                if (!skG.points.Contains(point))
-                {
-                    PointVO pointNotMatched = point;
-                }
-                }
-            HashSet<LineVO> hsLine = new HashSet<LineVO>();
-            hsLine.Add(new LineVO(1.0, 1.0, 2.0, 0.0, 0.0, 0.0));
-            hsLine.Add(new LineVO(1.0,2.1,3.2,0,0,0));
+            /*        SketchGeometry skg = skgList[0];
 
-            hsLine.Add(new LineVO(1.0000000001, 1.0, 2.0, 0.0, 0.0, 0.0));
+                    foreach(PointVO point in skg.points) {
+                        if (!skG.points.Contains(point))
+                        {
+                            PointVO pointNotMatched = point;
+                        }
+                        }
+                    HashSet<LineVO> hsLine = new HashSet<LineVO>();
+                    hsLine.Add(new LineVO(1.0, 1.0, 2.0, 0.0, 0.0, 0.0));
+                    hsLine.Add(new LineVO(1.0,2.1,3.2,0,0,0));
 
-            System.IO.StreamWriter debug = new System.IO.StreamWriter(swModel.GetPathName() + ".debug");
+                    hsLine.Add(new LineVO(1.0000000001, 1.0, 2.0, 0.0, 0.0, 0.0));
 
-            debug.WriteLine(hsLine.Count());
-            debug.Close();
+                    System.IO.StreamWriter debug = new System.IO.StreamWriter(swModel.GetPathName() + ".debug");
+
+                    debug.WriteLine(hsLine.Count());
+                    debug.Close();*/
+         /*   for (int i = 0; i < sketches.Count; i++) {
+                getRelationsFromSketch(sketches.ElementAt(i));
+                    }*/
 
 
             // 3. infer rules
@@ -909,6 +1138,86 @@ namespace TestSolidWorksAddin
 
             file.WriteLine(json);
             file.Close();
+        }
+
+
+        private SketchGeometry getBodyFromFace(Face face, ModelDoc2 swModel)
+        {
+            SketchGeometry sketchBody = new SketchGeometry();
+            List<LineVO> lines = new List<LineVO>();
+            List<PointVO> points = new List<PointVO>();
+            //dynamic vertices = face.GetVertices();
+            dynamic edges = face.GetEdges();
+            
+           /* foreach (Vertex vertex in vertices)
+            {
+
+                PointVO point = getVertexPoint(swModel, vertex.GetPoint());
+                points.Add(point);
+            }*/
+
+           // sketchBody.points = points;
+
+            foreach (Edge edge in edges)
+            {
+                if (edge.GetStartVertex() != null)
+                {
+                    Vertex startVertex = edge.GetStartVertex();
+                    Vertex endVertex = edge.GetEndVertex();
+                    LineVO line = new LineVO();
+                    line.start = getVertexPoint(swModel, startVertex.GetPoint());
+                    line.end = getVertexPoint(swModel, endVertex.GetPoint());
+                    line.name = edge.GetID().ToString();
+                    line.key = line.start.key + "##" + line.end.key + "##";
+                    lines.Add(line);
+                }
+            }
+            sketchBody.lines = lines;
+            return sketchBody;
+        }
+       private SketchGeometry getBodyFromSketch(Body2 body, ModelDoc2 swModel)
+        {
+            SketchGeometry sketchBody = new SketchGeometry();
+            List<LineVO> lines = new List<LineVO>();
+            List<PointVO> points = new List<PointVO>();
+            dynamic vertices = body.GetVertices();
+            dynamic edges = body.GetEdges();
+            
+            foreach (Vertex vertex in vertices)
+            {
+
+                PointVO point = getVertexPoint(swModel, vertex.GetPoint());
+                points.Add(point);
+            }
+
+            sketchBody.points = points;
+
+            foreach (Edge edge in edges)
+            {
+                if (edge.GetStartVertex() != null)
+                {
+                    Vertex startVertex = edge.GetStartVertex();
+                    Vertex endVertex = edge.GetEndVertex();
+                    LineVO line = new LineVO();
+                    line.start = getVertexPoint(swModel, startVertex.GetPoint());
+                    line.end = getVertexPoint(swModel, endVertex.GetPoint());
+                    line.name = edge.GetID().ToString();
+                    line.key = line.start.key + "##" + line.end.key + "##";
+                    lines.Add(line);
+                }
+            }
+            sketchBody.lines = lines;
+            return sketchBody;
+        }
+
+        private SketchGeometry getGeometryFromSketch(SketchBodyVO sketchBody)
+        {
+            SketchVO skVO = new SketchVO();
+
+                skVO.name = sketchBody.name;
+            skVO.relations = sketchBody.relations;
+            skVO.swSketch = sketchBody.swSketch;
+          return  getGeometryFromSketch(skVO);
         }
 
         private SketchGeometry getGeometryFromSketch(SketchVO sketch)
