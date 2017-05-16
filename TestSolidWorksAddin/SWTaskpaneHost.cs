@@ -14,8 +14,7 @@ using SolidWorks.Interop.swpublished;
 using SolidWorksTools;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
-using log4net;
-using log4net.Config;
+
 using System.Runtime.Remoting;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -29,7 +28,7 @@ namespace TestSolidWorksAddin
    
     public partial class SWTaskpaneHost : UserControl
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(SWTaskpaneHost));
+      
         public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_AJ";
         public SldWorks mSWApplication;
         System.IO.StreamWriter file;
@@ -434,6 +433,7 @@ namespace TestSolidWorksAddin
                 {
                     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
+                    partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
                 }
             }
@@ -463,16 +463,18 @@ namespace TestSolidWorksAddin
 
 
             PartVO partVO = new PartVO();
-
+            List<SketchGeometry> skgList = new List<SketchGeometry>();
             //TODO:Get Actual PartName
             partVO.name = "Test";
             try
             {
                 partVO.sketches = getAllSketches(swPart);
+              
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
                     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
+                    partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
 
                     // getRelationsFromSketch(partVO.sketches.ElementAt(i));
@@ -489,6 +491,14 @@ namespace TestSolidWorksAddin
             jsonFile.WriteLine(json);
             jsonFile.Close();
             file.Close();
+
+
+
+           
+            //var jsonGeomtery = new JavaScriptSerializer().Serialize(skgList);
+
+          //  file.WriteLine(json);
+          //  file.Close();
 
         }
 

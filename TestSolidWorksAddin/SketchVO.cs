@@ -12,6 +12,8 @@ namespace TestSolidWorksAddin
        public string name { get; set; }
         public List<RelationVO> relations = new List<RelationVO>();
 
+        public SketchGeometry geometry;
+
        [NonSerialized] public Sketch swSketch;
 
     }
