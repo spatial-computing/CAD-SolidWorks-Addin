@@ -8,7 +8,7 @@ namespace RelationFixerApp
 {
     class FixedRelationVO 
     {
-         String type = "Fixed"; //TODO: Convert to Enum
+        public String type = "Fixed"; //TODO: Convert to Enum
        public ArcVO entity;
 
     }
