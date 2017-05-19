@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Diagnostics;
 
 namespace RelationFixerApp
 {
@@ -13,8 +14,10 @@ namespace RelationFixerApp
     {
         static void Main(string[] args)
         {
+            Debugger.Launch();
             String folderPath = args[0];
             String fileName = args[1];
+            String mode = args[2];
             System.IO.StreamWriter file; file = new StreamWriter(folderPath+"\\" +fileName+ ".fixSketch.json");
             List<RelationVO> validRelations = new List<RelationVO>();
             List<RelationVO> invalidRelations = new List<RelationVO>();
@@ -27,35 +30,68 @@ namespace RelationFixerApp
                 validRelations.AddRange(sketchVO.relations);
             }
 
-            string text2 = File.ReadAllText(folderPath + "\\" + fileName + ".invalid.json", Encoding.UTF8);
-            PartVO invalidPart = new JavaScriptSerializer().Deserialize<PartVO>(text2);
+         
 
-            //Extract Relations From Part
-            foreach (SketchVO sketchVO in invalidPart.sketches)
+
+            if (mode.Equals("0"))
             {
-                invalidRelations.AddRange(sketchVO.relations);
-            }
+                string text2 = File.ReadAllText(folderPath + "\\" + fileName + ".invalid.json", Encoding.UTF8);
+                PartVO invalidPart = new JavaScriptSerializer().Deserialize<PartVO>(text2);
 
-
-            //    jsonFile.Close();
-            List<RelationVO> relationsMissing = new List<RelationVO>();
-            for (int i = 0; i < validRelations.Count; i++)
-            {
-                if (!invalidRelations.Contains(validRelations.ElementAt(i)))
+                //Extract Relations From Part
+                foreach (SketchVO sketchVO in invalidPart.sketches)
                 {
-                    //   file.WriteLine("Valid Relation");
-                    relationsMissing.Add(validRelations.ElementAt(i));
-                    
-
+                    invalidRelations.AddRange(sketchVO.relations);
                 }
-            }
+                //    jsonFile.Close();
+                List<RelationVO> relationsMissing = new List<RelationVO>();
+                for (int i = 0; i < validRelations.Count; i++)
+                {
+                    if (!invalidRelations.Contains(validRelations.ElementAt(i)))
+                    {
+                        //   file.WriteLine("Valid Relation");
+                        relationsMissing.Add(validRelations.ElementAt(i));
 
-            if (relationsMissing.Count > 0)
+
+                    }
+                }
+
+                if (relationsMissing.Count > 0)
+                {
+                    var json = new JavaScriptSerializer().Serialize(relationsMissing);
+                    file.WriteLine(json);
+                }
+            }else
             {
-                var json = new JavaScriptSerializer().Serialize(relationsMissing);
-                file.WriteLine(json);
-            }
+                //Mode 1
+                //Comapre Geometry
+                //Read another Valid File
+                string textValid2 = File.ReadAllText(folderPath + "\\" + fileName + ".valid2.json", Encoding.UTF8);
+               
+                PartVO validPart2 = new JavaScriptSerializer().Deserialize<PartVO>(textValid2);
+                //Compare both Valid Geometries
+                int validSketch2Index = 0;
+                List<FixedRelationVO> fixedRelations = new List<FixedRelationVO>();
+                foreach(SketchVO sketchVO in validPart.sketches)
+                {
+                    SketchGeometry skg1 = sketchVO.geometry;
+                    SketchGeometry skg2 = validPart2.sketches.ElementAt(validSketch2Index).geometry; // sketchVO.geometry;
 
+                    //Compare all arcs
+                    foreach(ArcVO arc in skg1.arcs)
+                    {
+                        if (skg2.arcs.Contains(arc)){
+                            FixedRelationVO fixedRelationVO = new FixedRelationVO();
+                            fixedRelationVO.entity = arc;
+                            fixedRelations.Add(fixedRelationVO);
+                        }
+                    }
+                }
+
+                var json = new JavaScriptSerializer().Serialize(fixedRelations);
+                file.WriteLine(json);
+
+            }
             /*     for (int i = 0; i < invalidRelations.Count; i++)
                  {
                      if (!validRelations.Contains(invalidRelations.ElementAt(i)))
