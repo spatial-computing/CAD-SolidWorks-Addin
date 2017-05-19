@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
+using System.Diagnostics;
 
 namespace TestSolidWorksAddin
 {
@@ -476,10 +477,11 @@ namespace TestSolidWorksAddin
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
                     partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
-
+            
                     // getRelationsFromSketch(partVO.sketches.ElementAt(i));
 
                 }
+            //    swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
             }
             catch (Exception e2)
             {
@@ -504,12 +506,25 @@ namespace TestSolidWorksAddin
 
         private void button6_Click(object sender, EventArgs e)
         {
-
             SldWorks swApp = mSWApplication;
             ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
             SelectionMgr selectMgr = swModel.SelectionManager;
             PartDoc swPart = (PartDoc)swModel;
             int errorCode;
+
+            Process notePad = new Process();
+            String folderName = swModel.GetPathName().Substring(0, swModel.GetPathName().LastIndexOf("\\"));
+            String fileName = swModel.GetPathName().Substring(folderName.Length + 1, swModel.GetPathName().Length - folderName.Length - 1);
+            notePad.StartInfo.FileName = "C:\\Users\\aj\\Source\\Repos\\CAD-SolidWorks-Addin\\RelationFixerApp\\bin\\Debug\\RelationFixerApp.exe";
+            notePad.StartInfo.Arguments =folderName +" "+ fileName+" 0"; // if you need some
+        
+           
+            notePad.Start();
+
+
+            notePad.WaitForExit(100);
+
+
             System.IO.StreamWriter logFile = new System.IO.StreamWriter(swModel.GetPathName() + ".fixSketch.logs");
 
              System.IO.StreamReader file = new System.IO.StreamReader(swModel.GetPathName() + ".fixSketch.json");
@@ -520,66 +535,68 @@ namespace TestSolidWorksAddin
             List<RelationVO> relations = new JavaScriptSerializer()
                 .Deserialize<List<RelationVO>>(json);
             HashSet<string> sketchNames = new HashSet<string>();
-            foreach (RelationVO relation in relations)
+            if (relations!=null && relations.Count > 0)
             {
-                sketchNames.Add(relation.entities[0].sketchName);
-            }
-
-            ModelDocExtension swModelExtension = swModel.Extension;
-            SketchManager swSketchManager = swModel.SketchManager;
-            swModelExtension.SelectByID2(relations[0].entities[0].sketchName, "SKETCH", 0, 0, 0, false, 0, null, (int)swSelectOption_e.swSelectOptionDefault);
-
-            foreach (string sketchNam in sketchNames)
-            {
-                String sketchName = sketchNam;
-
-                // sketchName = relations[0].entities[0].sketchName;
-
-                SketchVO sketch = getSketchWithName(swPart, sketchName);
-                SketchRelationManager swSkRelMgr = sketch.swSketch.RelationManager;
-
-                swModel.DeleteAllRelations();
-                fullyDefineSketch(sketch, swModel);
-                Object[] vSkRelArr = (object[])swSkRelMgr.GetRelations((int)swSketchRelationFilterType_e.swAll);
-                if ((vSkRelArr == null))
+                foreach (RelationVO relation in relations)
                 {
-                    continue;
+                    sketchNames.Add(relation.entities[0].sketchName);
                 }
 
-                swModel.EditSketch();
-                //      for (int i = 0; i < relations.Count(); i++)
-                //      {
-                //          RelationVO relation = relations.ElementAt(i);
+                ModelDocExtension swModelExtension = swModel.Extension;
+                SketchManager swSketchManager = swModel.SketchManager;
+                swModelExtension.SelectByID2(relations[0].entities[0].sketchName, "SKETCH", 0, 0, 0, false, 0, null, (int)swSelectOption_e.swSelectOptionDefault);
 
-               
-                List<SketchRelation> deleteRelationList = new List<SketchRelation>();
-                foreach (SketchRelation vRel in vSkRelArr)
+                foreach (string sketchNam in sketchNames)
                 {
+                    String sketchName = sketchNam;
 
-                    SketchRelation swSkRel = (SketchRelation)vRel;
-                    try
-                    {
-                        RelationVO swRelation = new RelationVO(swSkRel, sketchName, swModel);
-                        if(!relations.Contains(swRelation) && swRelation.entities[0].sketchName == sketchName)
-                            swSkRelMgr.DeleteRelation(swSkRel);
-                    }
-                    catch (Exception e1)
-                    {
-                        logFile.WriteLine("Error creating relation on Sketch "+sketchName);
-                        logFile.WriteLine("Failed with error "+e1);
-                        logFile.WriteLine("");
+                    // sketchName = relations[0].entities[0].sketchName;
 
+                    SketchVO sketch = getSketchWithName(swPart, sketchName);
+                    SketchRelationManager swSkRelMgr = sketch.swSketch.RelationManager;
+
+                    swModel.DeleteAllRelations();
+                    fullyDefineSketch(sketch, swModel);
+                    Object[] vSkRelArr = (object[])swSkRelMgr.GetRelations((int)swSketchRelationFilterType_e.swAll);
+                    if ((vSkRelArr == null))
+                    {
+                        continue;
                     }
+
+                    swModel.EditSketch();
+                    //      for (int i = 0; i < relations.Count(); i++)
+                    //      {
+                    //          RelationVO relation = relations.ElementAt(i);
+
+
+                    List<SketchRelation> deleteRelationList = new List<SketchRelation>();
+                    foreach (SketchRelation vRel in vSkRelArr)
+                    {
+
+                        SketchRelation swSkRel = (SketchRelation)vRel;
+                        try
+                        {
+                            RelationVO swRelation = new RelationVO(swSkRel, sketchName, swModel);
+                            if (!relations.Contains(swRelation) && swRelation.entities[0].sketchName == sketchName)
+                                swSkRelMgr.DeleteRelation(swSkRel);
+                        }
+                        catch (Exception e1)
+                        {
+                            logFile.WriteLine("Error creating relation on Sketch " + sketchName);
+                            logFile.WriteLine("Failed with error " + e1);
+                            logFile.WriteLine("");
+
+                        }
+                    }
+
+
+
+
+                    //    }
+                    swSketchManager.InsertSketch(true);
                 }
 
- 
-
-
-                //    }
-                swSketchManager.InsertSketch(true);
             }
-
-          
         }
 
         private void button7_Click(object sender, EventArgs e)
@@ -985,8 +1002,8 @@ namespace TestSolidWorksAddin
             //  line.id = swModel.Extension.GetPersistReference3(skLine);
             arc.centre = getPoint(swModel, skArc.GetCenterPoint2());
             arc.normalVector = skArc.GetNormalVector();
-            arc.start = skArc.GetStartPoint2();
-            arc.end = skArc.GetEndPoint2();
+            arc.start = getPoint(swModel, skArc.GetStartPoint2());
+            arc.end = getPoint(swModel, skArc.GetEndPoint2());
             arc.radius = skArc.GetRadius();
             return arc;
         }
@@ -1023,6 +1040,31 @@ namespace TestSolidWorksAddin
             pointVO.z = skPoint[2];
             pointVO.key = "x:" + pointVO.x + "y:" + pointVO.y + "z:" + pointVO.z;
             return pointVO;
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            SldWorks swApp = mSWApplication;
+            ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
+            SelectionMgr selectMgr = swModel.SelectionManager;
+            PartDoc swPart = (PartDoc)swModel;
+            int errorCode;
+           
+            Process notePad = new Process();
+            String folderName = swModel.GetPathName().Substring(0, swModel.GetPathName().LastIndexOf("\\"));
+            String fileName = swModel.GetPathName().Substring(folderName.Length + 1, swModel.GetPathName().Length - folderName.Length - 1);
+            notePad.StartInfo.FileName = "C:\\Users\\aj\\Source\\Repos\\CAD-SolidWorks-Addin-Release1\\RelationFixerApp\\bin\\Debug\\RelationFixerApp.exe";
+            String args = folderName + " " + fileName + " 1";
+            
+            notePad.StartInfo.Arguments =args; // if you need some
+          
+            notePad.Start();
+
+
+            notePad.WaitForExit(100);
+
+
+
         }
 
         /* private PointVO getPoint2(ModelDoc2 swModel, double[] skPoint)
