@@ -26,9 +26,10 @@ namespace RelationFixerApp
 
         public bool Equals(PointVO other)
         {
-            return ((this.x) == other.x)) &&
-                   ((this.y == other.y)) &&
-                   ((this.z == other.z)) ;
+            return ((this.x == other.x) &&
+                   (this.y == other.y) &&
+                   (this.z == other.z))||
+                   this.key.Equals(other.key);
         }
 
 
