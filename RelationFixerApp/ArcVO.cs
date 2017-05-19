@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RelationFixerApp
 {
-    class ArcVO
+    class ArcVO: IEquatable<ArcVO>
     {
        public double radius;
        public PointVO centre;
@@ -16,10 +16,12 @@ namespace RelationFixerApp
 
         public bool Equals(ArcVO other)
         {
-            return (this.centre == other.centre)||
+           bool centreEqual= this.centre.Equals(other.centre);
+            return (centreEqual && 
+                   (this.radius == other.radius))||
                    (this.start == other.start) ||
-                   (this.end == other.end) ||
-                   (this.radius == other.radius);
+                   (this.end == other.end) 
+                   ;
         }
 
     }
