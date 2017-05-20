@@ -62,8 +62,8 @@ namespace TestSolidWorksAddin
             using (Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(keyPath))
             {
                 rk.SetValue(null, 1); // Load at startup
-                rk.SetValue("Title", "Solidworks-Addin - Rel-I"); // Title
-                rk.SetValue("Description", "Release - I"); // Description
+                rk.SetValue("Title", "Solidworks-Addin - AJ-Dev"); // Title
+                rk.SetValue("Description", "AJ-DEV"); // Description
             }
         }
         [ComUnregisterFunction()]
