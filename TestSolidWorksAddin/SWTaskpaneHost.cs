@@ -14,8 +14,7 @@ using SolidWorks.Interop.swpublished;
 using SolidWorksTools;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
-using log4net;
-using log4net.Config;
+
 using System.Runtime.Remoting;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -30,7 +29,7 @@ namespace TestSolidWorksAddin
    
     public partial class SWTaskpaneHost : UserControl
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(SWTaskpaneHost));
+      
         public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_AJ";
         public SldWorks mSWApplication;
         System.IO.StreamWriter file;
@@ -42,6 +41,7 @@ namespace TestSolidWorksAddin
 
   private List<SketchVO> getAllSketches(PartDoc swPart)
         {
+            
             List<SketchVO> sketches = new List<SketchVO>();
            
             Feature swFeat = (Feature)swPart.FirstFeature();
@@ -630,7 +630,7 @@ namespace TestSolidWorksAddin
 
         }
 
-        private SketchVO getRelationsFromSketchWithLog(SketchVO skVO)
+     /*   private SketchVO getRelationsFromSketchWithLog(SketchVO skVO)
         {
             SldWorks swApp = mSWApplication;
             ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
@@ -798,7 +798,7 @@ namespace TestSolidWorksAddin
             }
             return skVO;
 
-        }
+        }*/
 
      
 
