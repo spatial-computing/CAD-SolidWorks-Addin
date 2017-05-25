@@ -10,5 +10,6 @@ namespace TestSolidWorksAddin
     {
       public  String name;
       public  List<SketchVO> sketches = new List<SketchVO>();
+        public List<SketchBodyVO> sketchBodies;
     }
 }

@@ -81,9 +81,46 @@ namespace TestSolidWorksAddin
         private List<SketchBodyVO> getAllSketchesWithBody(PartDoc swPart)
         {
             List<SketchBodyVO> sketchBodies = new List<SketchBodyVO>();
-            
+            List<LineVO> edges = new List<LineVO>();
+            List<ArcVO> arcs = new List<ArcVO>();
+
             ModelDoc2 swModel = (ModelDoc2)swPart;
-          
+            SelectionMgr swSelMgr = swModel.SelectionManager;
+            swModel.Extension.SelectAll();
+            for (int i = 0; i < (swSelMgr.GetSelectedObjectCount2(-1) - 1); i++)
+            {
+                dynamic obj = swSelMgr.GetSelectedObject2(i + 1);
+                try
+                {
+                    Edge e = (Edge)obj;
+                   edges.Add(getLine(e, swModel));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Not a edge");
+                }
+
+                try
+                {
+                    Point p = (Point)obj;
+                }catch(Exception e)
+                {
+
+                    Console.WriteLine("Not a point");
+                }
+                try
+                {
+                    SketchArc arc = (SketchArc)obj;
+                    arcs.Add(getArc(arc, swModel));
+                }catch(Exception e)
+                {
+                    Console.WriteLine("Not an arc");
+                }
+
+      
+
+            }
+
             Feature swFeat = (Feature)swPart.FirstFeature();
             while (swFeat != null)
             {
@@ -907,6 +944,7 @@ namespace TestSolidWorksAddin
             try
             {
                 partVO.sketches = getAllSketches(swPart);
+                partVO.sketchBodies = getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
                     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
@@ -947,7 +985,7 @@ namespace TestSolidWorksAddin
             try
             {
                 partVO.sketches = getAllSketches(swPart);
-              
+               partVO.sketchBodies= getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
                     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
@@ -1348,6 +1386,20 @@ namespace TestSolidWorksAddin
             sketchBody.lines = lines;
             return sketchBody;
         }
+
+        private LineVO getLine(Edge edge,ModelDoc2 swModel)
+        {
+            Vertex startVertex = edge.GetStartVertex();
+            Vertex endVertex = edge.GetEndVertex();
+            LineVO line = new LineVO();
+            line.start = getVertexPoint(swModel, startVertex.GetPoint());
+            line.end = getVertexPoint(swModel, endVertex.GetPoint());
+            line.name = edge.GetID().ToString();
+            line.key = line.start.key + "##" + line.end.key + "##";
+            line.id = swModel.Extension.GetPersistReference3(edge);
+            return line;
+        }
+
        private SketchGeometry getBodyFromSketch(Body2 body, ModelDoc2 swModel)
         {
             SketchGeometry sketchBody = new SketchGeometry();
@@ -1376,7 +1428,9 @@ namespace TestSolidWorksAddin
                     line.end = getVertexPoint(swModel, endVertex.GetPoint());
                     line.name = edge.GetID().ToString();
                     line.key = line.start.key + "##" + line.end.key + "##";
+                    line.id = swModel.Extension.GetPersistReference3(edge);
                     lines.Add(line);
+
                 }
             }
             sketchBody.lines = lines;
@@ -1425,7 +1479,7 @@ namespace TestSolidWorksAddin
                     {
                         SketchPoint skPoint = (SketchPoint)sketchPoint;
                         PointVO point = getPoint(swModel, skPoint);
-                        point.id = swModel.Extension.GetPersistReference3(skPoint);
+                      //  point.id = swModel.Extension.GetPersistReference3(skPoint);
                         points.Add(point);
                     }
                 }
@@ -1442,40 +1496,45 @@ namespace TestSolidWorksAddin
                 List<CircleVO> circles = new List<CircleVO>();
                 List<ArcVO> arcs = new List<ArcVO>();
 
-                dynamic sketchSegments = swSketch.GetSketchSegments();
-           //     swSketch    
-                if (sketchSegments != null)
-                {
 
-                    foreach (dynamic skSeg in sketchSegments)
-                    {
 
-                        swSketchSegments_e type = (swSketchSegments_e)skSeg.GetType();
-                        switch (type)
-                        {
-                            case swSketchSegments_e.swSketchLINE:
-                                LineVO line = getLine(swModel, skSeg);
-                                lines.Add(line);
-                                break;
-                            case swSketchSegments_e.swSketchELLIPSE:
-                                //Not Implemented
-                                break;
-                            case swSketchSegments_e.swSketchARC:
-                                // SketchArc skArc = (SketchArc)skSeg;
-                                ArcVO arc = getArc(swModel, skSeg,skg.points);
-                                
-                                     arcs.Add(arc);
-                                break;
-                            case swSketchSegments_e.swSketchPARABOLA:
-                                //Not Implemented
-                                break;
-                            case swSketchSegments_e.swSketchSPLINE:
-                                //Not Implemented
-                                break;
+               
 
-                        }
-                    }
-                }
+                     dynamic sketchSegments = swSketch.GetSketchSegments();
+                 //     swSketch    
+                      if (sketchSegments != null)
+                      {
+
+                          foreach (dynamic skSeg in sketchSegments)
+                          {
+
+                              swSketchSegments_e type = (swSketchSegments_e)skSeg.GetType();
+                              switch (type)
+                              {
+                                  case swSketchSegments_e.swSketchLINE:
+                                      LineVO line = getLine(swModel, skSeg);
+                                      lines.Add(line);
+                                      break;
+                                  case swSketchSegments_e.swSketchELLIPSE:
+                                      //Not Implemented
+                                      break;
+                                  case swSketchSegments_e.swSketchARC:
+                                      // SketchArc skArc = (SketchArc)skSeg;
+
+                                      ArcVO arc = getArc(swModel, skSeg,skg.points);
+
+                                           arcs.Add(arc);
+                                      break;
+                                  case swSketchSegments_e.swSketchPARABOLA:
+                                      //Not Implemented
+                                      break;
+                                  case swSketchSegments_e.swSketchSPLINE:
+                                      //Not Implemented
+                                      break;
+
+                              }
+                          }
+                      }
                 skg.lines = lines;
                 skg.arcs = arcs;
             }
@@ -1484,7 +1543,16 @@ namespace TestSolidWorksAddin
             return skg;
         }
 
-       
+       static ArcVO getArc(SketchArc skArc, ModelDoc2 swModel)
+        {
+            ArcVO arc = new ArcVO();
+            arc.normalVector = skArc.GetNormalVector();
+            arc.start = getPoint(swModel, skArc.GetStartPoint2());
+            arc.end = getPoint(swModel, skArc.GetEndPoint2());
+            arc.radius = skArc.GetRadius();
+            arc.id = swModel.Extension.GetPersistReference3(skArc);
+            return arc;
+        }
 
         static ArcVO getArc(ModelDoc2 swModel, SketchSegment skSegArc,List<PointVO> refPoints)
         {
@@ -1505,7 +1573,7 @@ namespace TestSolidWorksAddin
         static LineVO getLine(ModelDoc2 swModel, SketchSegment skSegLine)
         {
             LineVO line = new LineVO();
-        //    line.id = swModel.Extension.GetPersistReference3(skSegLine);
+            line.id = swModel.Extension.GetPersistReference3(skSegLine);
             SketchLine skLine = (SketchLine)skSegLine;
           //  line.id = swModel.Extension.GetPersistReference3(skLine);
             line.start = getPoint(swModel, skLine.GetStartPoint2());
@@ -1533,7 +1601,7 @@ namespace TestSolidWorksAddin
             pointVO.y = skPoint.Y;
             pointVO.z = skPoint.Z;
             pointVO.key = "x:" + pointVO.x + "y:" + pointVO.y + "z:" + pointVO.z;
-           // pointVO.id = swModel.Extension.GetPersistReference3(skPoint);
+            pointVO.id = swModel.Extension.GetPersistReference3(skPoint);
             return pointVO;
         }
 
@@ -1544,6 +1612,7 @@ namespace TestSolidWorksAddin
             pointVO.y = skPoint[1];
             pointVO.z = skPoint[2];
             pointVO.key = "x:" + pointVO.x + "y:" + pointVO.y + "z:" + pointVO.z;
+          //  pointVO.id = swModel.Extension.GetPersistReference3(skPoint);
             return pointVO;
         }
 
