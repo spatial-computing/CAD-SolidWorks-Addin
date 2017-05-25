@@ -7,8 +7,8 @@
     <ProjectGuid>{CA3A498E-CDF9-4493-B221-DC7D1BBA9302}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SolidWorksAddin</RootNamespace>
-    <AssemblyName>SolidWorksAddin</AssemblyName>
+    <RootNamespace>TestSolidWorksAddin</RootNamespace>
+    <AssemblyName>SolidWorksAddinRel2</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
