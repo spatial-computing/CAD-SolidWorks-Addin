@@ -8,7 +8,7 @@ namespace TestSolidWorksAddin
 {
     class PointVO : IEquatable<PointVO>
     {
-       public object id;
+       public byte[] id;
         public String key;
        public double x;
        public double y;
