@@ -29,9 +29,45 @@ namespace TestSolidWorksAddin
                 // Set-up add-in call back info
                 bool result = mSWApplication.SetAddinCallbackInfo(0, this, Cookie);
                 this.UISetup();
-                return true;
+            AttachEventHandlers();
+            return true;
 
             }
+        public bool AttachEventHandlers()
+        {
+            AttachSwEvents();
+            
+            return true;
+        }
+        private bool AttachSwEvents()
+        {
+            try
+            {
+       //         mSWApplication.ActiveDocChangeNotify += new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(ActiveDocChangeNotify);
+                mSWApplication.DocumentLoadNotify2 += new DSldWorksEvents_DocumentLoadNotify2EventHandler(DocumentLoadNotify2);
+       //         mSWApplication.FileNewNotify2 += new DSldWorksEvents_FileNewNotify2EventHandler(FileNewNotify2);
+        //        mSWApplication.ActiveModelDocChangeNotify += new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(ActiveModelDocChangeNotify);
+                mSWApplication.FileOpenPostNotify += new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
+         //       mSWApplication.FileOpenPreNotify += new DSldWorksEvents_FileOpenPreNotifyEventHandler(FileOpenPreNotify);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return false;
+            }
+        }
+
+        public int DocumentLoadNotify2(string docTitle, string docPath)
+        {
+            return 0;
+        }
+
+        int FileOpenPostNotify(string FileName)
+        {
+            
+            return 0;
+        }
 
         public bool DisconnectFromSW()     
             {
@@ -62,8 +98,8 @@ namespace TestSolidWorksAddin
             using (Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(keyPath))
             {
                 rk.SetValue(null, 1); // Load at startup
-                rk.SetValue("Title", "Solidworks-Addin - Rel-I"); // Title
-                rk.SetValue("Description", "Release - I"); // Description
+                rk.SetValue("Title", "Solidworks-Addin - Rel-II"); // Title
+                rk.SetValue("Description", "Release - II"); // Description
             }
         }
         [ComUnregisterFunction()]
