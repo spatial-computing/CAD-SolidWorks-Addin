@@ -30,7 +30,7 @@ namespace TestSolidWorksAddin
     public partial class SWTaskpaneHost : UserControl
     {
       
-        public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_AJ";
+        public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_OB";
         public SldWorks mSWApplication;
         System.IO.StreamWriter file;
         public SWTaskpaneHost()
@@ -1070,22 +1070,55 @@ namespace TestSolidWorksAddin
             SldWorks swApp = mSWApplication;
             ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
             SelectionMgr selectMgr = swModel.SelectionManager;
+            ModelDocExtension swModelExtension = swModel.Extension;
             PartDoc swPart = (PartDoc)swModel;
             int errorCode;
            
             Process notePad = new Process();
             String folderName = swModel.GetPathName().Substring(0, swModel.GetPathName().LastIndexOf("\\"));
             String fileName = swModel.GetPathName().Substring(folderName.Length + 1, swModel.GetPathName().Length - folderName.Length - 1);
-            notePad.StartInfo.FileName = "C:\\Users\\aj\\Source\\Repos\\CAD-SolidWorks-Addin-Release1\\RelationFixerApp\\bin\\Debug\\RelationFixerApp.exe";
+            notePad.StartInfo.FileName = "C:\\Users\\bbandyop\\Documents\\CAD-SolidWorks-Addin\\RelationFixerApp\\bin\\Debug\\RelationFixerApp.exe";
             String args = folderName + " " + fileName + " 1";
             
             notePad.StartInfo.Arguments =args; // if you need some
           
             notePad.Start();
-
-
             notePad.WaitForExit(100);
 
+
+            System.IO.StreamReader file = new System.IO.StreamReader(swModel.GetPathName() + ".fixSketch.json");
+            //  System.IO.StreamReader file = new System.IO.StreamReader("C:\\Users\\aj\\Documents\\3Cylinders\\" + ".fixSketch.json");
+            string json = file.ReadToEnd();
+            List<FixedRelationVO> relations = new JavaScriptSerializer().Deserialize<List<FixedRelationVO>>(json);
+
+            
+
+            foreach (FixedRelationVO fix in relations)
+            {
+                // goto sketch edit mode
+                swModelExtension.SelectByID2(fix.sketchName, "SKETCH", 0, 0, 0, false, 0, null, (int)swSelectOption_e.swSelectOptionDefault);
+                swModel.EditSketch();
+
+                try
+                {
+                    byte[] b2 = (byte []) fix.entity.centre.id;
+
+                    // byte[] b2 = new byte[] { 40, 35, 0, 0, 6, 0, 0, 0, 255, 254, 255, 0, 0, 0, 0, 0, 27, 0, 0, 0, 255, 255, 1, 0, 13, 0, 115, 103, 80, 111, 105, 110, 116, 72, 97, 110, 100, 108, 101, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0 };
+
+
+
+                    SketchPoint objPersis = (SketchPoint)swModel.Extension.GetObjectByPersistReference3(b2, out errorCode);
+                    int j = 5;
+                    objPersis.Select4(true, null);
+                }catch(Exception ex)
+                {
+                    int i = 0;
+                    i = i + 21;
+                }
+
+
+                //break; // for testing
+            }
 
 
         }

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TestSolidWorksAddin-AJ")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("KarmaCAD Addin - OB")]
+[assembly: AssemblyDescription("Meant to process STEP files")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TestSolidWorksAddin-AJ")]
+[assembly: AssemblyCompany("USC")]
+[assembly: AssemblyProduct("KarmaCAD Addin - OB")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("ca3a498e-cff9-4493-b221-dc7d1bba9304")]
+[assembly: Guid("88912a5f-69a1-4b25-bff2-becaa7752e2a")]
 
 // Version information for an assembly consists of the following four values:
 //

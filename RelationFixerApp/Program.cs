@@ -83,6 +83,7 @@ namespace RelationFixerApp
                         if (skg2.arcs.Contains(arc)){
                             FixedRelationVO fixedRelationVO = new FixedRelationVO();
                             fixedRelationVO.entity = arc;
+                            fixedRelationVO.sketchName += sketchVO.name;
                             fixedRelations.Add(fixedRelationVO);
                         }
                     }

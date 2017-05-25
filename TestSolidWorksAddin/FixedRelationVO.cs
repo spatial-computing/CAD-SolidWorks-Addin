@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RelationFixerApp
+namespace TestSolidWorksAddin
 {
     class FixedRelationVO 
     {
         public String type = "Fixed"; //TODO: Convert to Enum
         public ArcVO entity;
         public String sketchName = "";
-
     }
 }

@@ -41,7 +41,7 @@ namespace TestSolidWorksAddin
 
         private void UISetup()
         {
-            mTaskpaneView = mSWApplication.CreateTaskpaneView2(string.Empty, "Woo! My first SwAddin");
+            mTaskpaneView = mSWApplication.CreateTaskpaneView2(string.Empty, "KarmaCAD-OB");
             mTaskpaneHost = (SWTaskpaneHost)mTaskpaneView.AddControl(SWTaskpaneHost.SWTASKPANE_PROGID, "");
             mTaskpaneHost.mSWApplication = mSWApplication;
         }
@@ -62,8 +62,8 @@ namespace TestSolidWorksAddin
             using (Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(keyPath))
             {
                 rk.SetValue(null, 1); // Load at startup
-                rk.SetValue("Title", "Solidworks-Addin - Rel-I"); // Title
-                rk.SetValue("Description", "Release - I"); // Description
+                rk.SetValue("Title", "KarmaCAD Addin - OB"); // Title
+                rk.SetValue("Description", "Meant to preprocess STEP files"); // Description
             }
         }
         [ComUnregisterFunction()]
