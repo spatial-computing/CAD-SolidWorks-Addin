@@ -8,6 +8,7 @@ namespace TestSolidWorksAddin
 {
     class ArcVO
     {
+       public byte[] id;
        public double radius;
        public PointVO centre;
        public PointVO start;
