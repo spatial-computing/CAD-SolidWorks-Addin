@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace TestSolidWorksAddin
 {
-    class PartVO
+    class SketchBodyVO :SketchVO
     {
-      public  String name;
-      public  List<SketchVO> sketches = new List<SketchVO>();
-        public List<SketchBodyVO> sketchBodies;
+
+      public  List<SketchGeometry> sketchBodies;
+      public  SketchGeometry sketchGeometry;
+        
     }
 }
