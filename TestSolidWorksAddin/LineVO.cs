@@ -8,7 +8,7 @@ namespace TestSolidWorksAddin
 {
     class LineVO : IEquatable<LineVO>
     {
-      // public long id;
+       public byte[] id;
        public  PointVO start;
        public PointVO end;
        public string name;
