@@ -77,6 +77,7 @@
     <Compile Include="FixedRelationVO.cs" />
     <Compile Include="LineVO.cs" />
     <Compile Include="PointVO.cs" />
+    <Compile Include="SketchBodyVO.cs" />
     <Compile Include="SketchGeometry.cs" />
     <Compile Include="SketchRelationEntityVO.cs" />
     <Compile Include="PartVO.cs" />
