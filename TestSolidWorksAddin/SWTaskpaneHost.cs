@@ -1557,7 +1557,7 @@ namespace TestSolidWorksAddin
         static ArcVO getArc(ModelDoc2 swModel, SketchSegment skSegArc,List<PointVO> refPoints)
         {
             ArcVO arc = new ArcVO();
-           // arc.id = swModel.Extension.GetPersistReference3(skSegArc);
+            arc.id = swModel.Extension.GetPersistReference3(skSegArc);
             SketchArc skArc = (SketchArc)skSegArc;
             //  line.id = swModel.Extension.GetPersistReference3(skLine);
             arc.centre = getPointForArc(swModel, skArc.GetCenterPoint2(),refPoints);
@@ -1652,16 +1652,18 @@ namespace TestSolidWorksAddin
 
                 try
                 {
-                    byte[] b2 = (byte []) fix.entity.centre.id;
+                    byte[] b2 = (byte []) fix.entity.id;
 
                     // byte[] b2 = new byte[] { 40, 35, 0, 0, 6, 0, 0, 0, 255, 254, 255, 0, 0, 0, 0, 0, 27, 0, 0, 0, 255, 255, 1, 0, 13, 0, 115, 103, 80, 111, 105, 110, 116, 72, 97, 110, 100, 108, 101, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0 };
 
 
 
-                    SketchPoint objPersis = (SketchPoint)swModel.Extension.GetObjectByPersistReference3(b2, out errorCode);
+                    SketchSegment objPersis = (SketchSegment)swModel.Extension.GetObjectByPersistReference3(b2, out errorCode);
                     int j = 5;
                     objPersis.Select4(true, null);
-                }catch(Exception ex)
+                    swModel.SketchAddConstraints("sgFIXED");
+                }
+                catch(Exception ex)
                 {
                     int i = 0;
                     i = i + 21;

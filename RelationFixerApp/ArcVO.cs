@@ -8,6 +8,7 @@ namespace RelationFixerApp
 {
     class ArcVO: IEquatable<ArcVO>
     {
+       public byte[] id;
        public double radius;
        public PointVO centre;
        public PointVO start;
