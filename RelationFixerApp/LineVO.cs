@@ -8,11 +8,12 @@ namespace RelationFixerApp
 {
     class LineVO : IEquatable<LineVO>, GeometryEntity
     {
-      // public long id;
-       public  PointVO start;
-       public PointVO end;
-       public string name;
+        public byte[] id;
+        public PointVO start;
+        public PointVO end;
+        public string name;
         public String key;
+
 
         public LineVO() { }
 

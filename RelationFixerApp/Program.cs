@@ -34,33 +34,123 @@ namespace RelationFixerApp
 
 
             if (mode.Equals("0"))
-            {   
-                string text2 = File.ReadAllText(folderPath + "\\" + fileName + ".invalid.json", Encoding.UTF8);
-                PartVO invalidPart = new JavaScriptSerializer().Deserialize<PartVO>(text2);
-                //Original Code to compare fully defined relations to find the changes
-                //Extract Relations From Part
-                /*foreach (SketchVO sketchVO in invalidPart.sketches)
+            {
+                try
                 {
-                    invalidRelations.AddRange(sketchVO.relations);
+                    Directory.Delete(folderPath + "\\" + fileName, true);
+                }catch(IOException e)
+                {
+                    Console.WriteLine("Directory doesn't exist? " + e);
                 }
-                //    jsonFile.Close();
-                List<RelationVO> relationsMissing = new List<RelationVO>();
-                for (int i = 0; i < validRelations.Count; i++)
+                System.IO.Directory.CreateDirectory(folderPath+"\\" + fileName+"_Temp");
+
+                
+                int i = 0;
+                foreach (SketchBodyVO sketchBodyVO in validPart.sketchBodies)
                 {
-                    if (!invalidRelations.Contains(validRelations.ElementAt(i)))
+                //    System.IO.StreamWriter dimensionalRelationFile;
+                //    dimensionalRelationFile = new StreamWriter(folderPath + "\\" + fileName + "\\"+i+".json");
+
+                    //Single combination of each entity in geometry with body
+                    SketchGeometry skGeometry = sketchBodyVO.sketchGeometry;
+                    SketchGeometry sketchBody = sketchBodyVO.sketchBodies;
+
+                    foreach( PointVO point in skGeometry.points)
                     {
-                        //   file.WriteLine("Valid Relation");
-                        relationsMissing.Add(validRelations.ElementAt(i));
+                        DimensionalRelation dimensionRelation = new DimensionalRelation();
+                        dimensionRelation.entity1 = point;
+                        dimensionRelation.sketchName = skGeometry.sketchName;
+                        if (sketchBody.lines != null)
+                        {
+                            foreach (LineVO line in sketchBody.lines)
+                            {
+                                System.IO.StreamWriter dimensionalRelationFile;
+                                dimensionalRelationFile = new StreamWriter(folderPath + "\\" + fileName + "_Temp" + "\\" + (i++) + ".json");
 
+                                dimensionRelation.entity2 = line;
+                                var relationJson = new JavaScriptSerializer().Serialize(dimensionRelation);
+                                dimensionalRelationFile.WriteLine(relationJson);
+                                dimensionalRelationFile.Close();
+                            }
+                        }
 
+                        if (sketchBody.arcs != null)
+                        {
+                            foreach (ArcVO arc in sketchBody.arcs)
+                            {
+                                dimensionRelation.entity2 = arc;
+                                System.IO.StreamWriter dimensionalRelationFile = new StreamWriter(folderPath + "\\" + fileName + "\\" + (i++) + ".json");
+                                var relationJson = new JavaScriptSerializer().Serialize(dimensionRelation);
+                                dimensionalRelationFile.WriteLine(relationJson);
+                                dimensionalRelationFile.Close();
+
+                            }
+                        }
                     }
-                }
 
-                if (relationsMissing.Count > 0)
-                {
-                    var json = new JavaScriptSerializer().Serialize(relationsMissing);
-                    file.WriteLine(json);
-                }*/
+                    foreach (LineVO lineSkg in skGeometry.lines)
+                    {
+                        DimensionalRelation dimensionRelation = new DimensionalRelation();
+                        dimensionRelation.entity1 = lineSkg;
+                        dimensionRelation.sketchName = skGeometry.sketchName;
+                        if (sketchBody.lines != null)
+                        {
+                            foreach (LineVO line in sketchBody.lines)
+                            {
+                                System.IO.StreamWriter dimensionalRelationFile;
+                                dimensionalRelationFile = new StreamWriter(folderPath + "\\" + fileName + "_Temp" + "\\" + (i++) + ".json");
+
+                                dimensionRelation.entity2 = line;
+                                var relationJson = new JavaScriptSerializer().Serialize(dimensionRelation);
+                                dimensionalRelationFile.WriteLine(relationJson);
+                                dimensionalRelationFile.Close();
+                            }
+                        }
+
+                        if (sketchBody.arcs != null)
+                        {
+                            foreach (ArcVO arc in sketchBody.arcs)
+                            {
+                                dimensionRelation.entity2 = arc;
+                                System.IO.StreamWriter dimensionalRelationFile = new StreamWriter(folderPath + "\\" + fileName + "\\" + (i++) + ".json");
+                                var relationJson = new JavaScriptSerializer().Serialize(dimensionRelation);
+                                dimensionalRelationFile.WriteLine(relationJson);
+                                dimensionalRelationFile.Close();
+
+                            }
+                        }
+                    }
+
+
+
+                }
+                //Original Code to compare fully defined relations to find the changes
+                /*   string text2 = File.ReadAllText(folderPath + "\\" + fileName + ".invalid.json", Encoding.UTF8);
+                   PartVO invalidPart = new JavaScriptSerializer().Deserialize<PartVO>(text2);
+
+                   //Extract Relations From Part
+                   foreach (SketchVO sketchVO in invalidPart.sketches)
+                   {
+                       invalidRelations.AddRange(sketchVO.relations);
+                   }
+                   //    jsonFile.Close();
+                   List<RelationVO> relationsMissing = new List<RelationVO>();
+                   for (int i = 0; i < validRelations.Count; i++)
+                   {
+                       if (!invalidRelations.Contains(validRelations.ElementAt(i)))
+                       {
+                           //   file.WriteLine("Valid Relation");
+                           relationsMissing.Add(validRelations.ElementAt(i));
+
+
+                       }
+                   }
+
+                   if (relationsMissing.Count > 0)
+                   {
+                       var json = new JavaScriptSerializer().Serialize(relationsMissing);
+                       file.WriteLine(json);
+                   }*/
 
 
 

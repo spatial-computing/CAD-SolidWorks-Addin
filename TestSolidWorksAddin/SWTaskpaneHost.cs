@@ -29,7 +29,7 @@ namespace TestSolidWorksAddin
    
     public partial class SWTaskpaneHost : UserControl
     {
-      
+        Dictionary<string,List<Feature>> allFeatures = new Dictionary<string,List<Feature>>();
         public const string SWTASKPANE_PROGID = "TestSolidWorksAddin.SWTaskPane_SwAddin_AJ";
         public SldWorks mSWApplication;
         System.IO.StreamWriter file;
@@ -78,172 +78,63 @@ namespace TestSolidWorksAddin
             return sketches;
         }
 
-        private List<SketchBodyVO> getAllSketchesWithBody(PartDoc swPart)
+        private void populateAllFeatures(PartDoc swPart)
         {
-            List<SketchBodyVO> sketchBodies = new List<SketchBodyVO>();
-            List<LineVO> edges = new List<LineVO>();
-            List<ArcVO> arcs = new List<ArcVO>();
-
             ModelDoc2 swModel = (ModelDoc2)swPart;
-            SelectionMgr swSelMgr = swModel.SelectionManager;
-            swModel.Extension.SelectAll();
-            for (int i = 0; i < (swSelMgr.GetSelectedObjectCount2(-1) - 1); i++)
-            {
-                dynamic obj = swSelMgr.GetSelectedObject2(i + 1);
-                try
-                {
-                    Edge e = (Edge)obj;
-                   edges.Add(getLine(e, swModel));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Not a edge");
-                }
-
-                try
-                {
-                    Point p = (Point)obj;
-                }catch(Exception e)
-                {
-
-                    Console.WriteLine("Not a point");
-                }
-                try
-                {
-                    SketchArc arc = (SketchArc)obj;
-                    arcs.Add(getArc(arc, swModel));
-                }catch(Exception e)
-                {
-                    Console.WriteLine("Not an arc");
-                }
-
-      
-
-            }
 
             Feature swFeat = (Feature)swPart.FirstFeature();
+            
             while (swFeat != null)
             {
-                List<SketchGeometry> sketchBodyList = new List<SketchGeometry>();
-                SketchBodyVO sketchBody = new SketchBodyVO();
                 if (swFeat.GetTypeName2() == "HoleWzd")
                 {
-                    object[] parents = (object[])swFeat.GetParents();
-                    if (parents != null)
-                    {
-                        foreach (Feature parent in parents)
-                        {
-                            object[] facesArray = parent.GetFaces();
-                            if (facesArray != null && facesArray.Length > 0)
-                            {
-                                Face parentFace = (Face)facesArray[0];
-                                if (parentFace != null)
-                                {
-                                    //  Feature p = parent.GetFaces();
-                                    Body2 body = parentFace.GetBody();
-                                    if (body != null)
-                                    {
-                                        //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
-                                        sketchBodyList.Add(getBodyFromSketch(body, swModel));
 
-                                    }
-                                }
-                            }
-                        }
-
-                    }
                     Feature subFeat = swFeat.GetFirstSubFeature();
                     while (subFeat != null && subFeat.GetTypeName2() == "ProfileFeature")
                     {
+                        object[] parents = (object[])subFeat.GetParents();
+                        if (parents != null)
+                        {
+                            List<Feature> parentFeatures = new List<Feature>();
 
-                        sketchBody.name = subFeat.Name;
-                        sketchBody.swSketch = (Sketch)subFeat.GetSpecificFeature2();
-                        sketchBody.sketchGeometry = getGeometryFromSketch(sketchBody);
+                            foreach (Feature parent in parents)
+                            {
+                                parentFeatures.Add(parent);
+                            }
 
-                        //Add code to get All parent body
-  
-            
-                        sketchBody.sketchBodies = sketchBodyList;
-                        sketchBodies.Add(sketchBody);
+                            allFeatures.Add(subFeat.Name, parentFeatures);
+                        }else
+                        {
+                            allFeatures.Add(subFeat.Name, null);
+                        }
                         subFeat = subFeat.GetNextSubFeature();
                     }
                 }
                 else
-                        if (swFeat.GetTypeName2() == "ProfileFeature")
+                        if (swFeat.GetTypeName2() == "ProfileFeature" )
                 {
-
-                    // SketchVO skVO = new SketchVO();
-                    sketchBody.name = swFeat.Name;
-                    sketchBody.swSketch = (Sketch)swFeat.GetSpecificFeature2();
-                    sketchBody.sketchGeometry = getGeometryFromSketch(sketchBody);
-
-                    /*        Feature parents = swFeat.GetOwnerFeature();
-                            if (parents != null)
-                            {
-                              //  SwConst.swSelectType_e
-
-                              /*  if (selected)
-                                {
-                                //    SelectionMgr swSelMgr = swModel.SelectionManager;
-                                    swSelMgr.GetSelectedObjectType(1);
-                                   // swModel.ClearSelection2(true);
-                                  //  dynamic v = b.get;
-
-                                }*/
-                    /*       object[] facesArray = parents.GetFaces();
-                           //Add code to get All parent body
-                           for (int i = 0; i < facesArray.Length-(facesArray.Length - 1); i++)
-                           {
-                               Face parentFace = (Face)facesArray[i];
-
-
-                              // Feature p2 = swFeat.GetOwnerFeature();
-                               if (parentFace != null)
-                               {
-                                 //  Feature p = parent.GetFaces();
-                                   Body2 body = parentFace.GetBody();
-                                   if (body != null)
-                                          {
-                                       //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
-                                       sketchBodyList.Add(getBodyFromSketch(body, swModel));
-
-                                    }
-                               }
-                           }
-                       }*/
                     object[] parents = (object[])swFeat.GetParents();
                     if (parents != null)
                     {
+                        List<Feature> parentFeatures = new List<Feature>();
+                       
                         foreach (Feature parent in parents)
                         {
-                            object[] facesArray = parent.GetFaces();
-                            if (facesArray != null && facesArray.Length > 0)
-                            {
-                                Face parentFace = (Face)facesArray[0];
-                                if (parentFace != null)
-                                {
-                                    //  Feature p = parent.GetFaces();
-                                    Body2 body = parentFace.GetBody();
-                                    if (body != null)
-                                    {
-                                        //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
-                                        sketchBodyList.Add(getBodyFromSketch(body, swModel));
-
-                                    }
-                                }
-                            }
+                          parentFeatures.Add(parent);
                         }
 
+                        allFeatures.Add(swFeat.Name, parentFeatures);
                     }
-                    sketchBody.sketchBodies = sketchBodyList;
-                    sketchBodies.Add(sketchBody);
+
 
                 }
-                
+
                 swFeat = swFeat.GetNextFeature();
             }
-            return sketchBodies;
+           
         }
+
+       
 
         private SketchVO getSketchWithName(PartDoc swPart,String sketchName)
         {
@@ -941,15 +832,16 @@ namespace TestSolidWorksAddin
 
             //TODO:Get Actual PartName
             partVO.name = "Test";
+            partVO.sketchBodies = new List<SketchBodyVO>();
             try
             {
                 partVO.sketches = getAllSketches(swPart);
-                partVO.sketchBodies = getAllSketchesWithBody(swPart);
+           //     partVO.sketchBodies = getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
                 //    fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
-                    partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
+                 partVO.sketchBodies.Add(  getGeometryFromSketch((partVO.sketches.ElementAt(i))));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
                 }
             }
@@ -977,20 +869,21 @@ namespace TestSolidWorksAddin
             file = new System.IO.StreamWriter(swModel.GetPathName() + ".validRelations");
 
 
-
+            populateAllFeatures(swPart);
             PartVO partVO = new PartVO();
             List<SketchGeometry> skgList = new List<SketchGeometry>();
             //TODO:Get Actual PartName
             partVO.name = "Test";
+            partVO.sketchBodies = new List<SketchBodyVO>();
             try
             {
                 partVO.sketches = getAllSketches(swPart);
-               partVO.sketchBodies= getAllSketchesWithBody(swPart);
+          //     partVO.sketchBodies= getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
                //     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
-                    partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
+                    partVO.sketchBodies.Add( getGeometryFromSketch((partVO.sketches.ElementAt(i))));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
                     
                     //Loop Over other entities to give points the ID's
@@ -1298,7 +1191,7 @@ namespace TestSolidWorksAddin
 
               writeToFile(swModel, ".BodyDetails.json", skgListAll);*/
 
-            getAllSketchesWithBody(swPart);
+     //       getAllSketchesWithBody(swPart);
 
      /*       List<SketchVO> sketches = getAllSketches(swPart);
             List<SketchGeometry> skgList = new List<SketchGeometry>();
@@ -1437,24 +1330,26 @@ namespace TestSolidWorksAddin
             return sketchBody;
         }
 
-        private SketchGeometry getGeometryFromSketch(SketchBodyVO sketchBody)
+        private SketchBodyVO getGeometryFromSketch(SketchBodyVO sketchBody)
         {
             SketchVO skVO = new SketchVO();
 
                 skVO.name = sketchBody.name;
             skVO.relations = sketchBody.relations;
             skVO.swSketch = sketchBody.swSketch;
+
           return  getGeometryFromSketch(skVO);
         }
 
-        private SketchGeometry getGeometryFromSketch(SketchVO sketch)
+        private SketchBodyVO getGeometryFromSketch(SketchVO sketch)
         {
             SldWorks swApp = mSWApplication;
             ModelDoc2 swModel = null;
             SelectionMgr swSelMgr = null;
             PartDoc swPart = null;
             SketchManager swSketchMgr = null;
-           
+            SketchBodyVO skgB = new SketchBodyVO();
+
              SketchGeometry skg = new SketchGeometry();
             swModel = (ModelDoc2)swApp.ActiveDoc;
             swSelMgr = (SelectionMgr)swModel.SelectionManager;
@@ -1470,7 +1365,7 @@ namespace TestSolidWorksAddin
             if (selected)
             {
                 Sketch swSketch = sketch.swSketch;
-
+                swModel.EditSketch();
                 List<PointVO> points = new List<PointVO>();
                 dynamic sketchPoints = swSketch.GetSketchPoints2();
                 if (sketchPoints != null)
@@ -1538,9 +1433,77 @@ namespace TestSolidWorksAddin
                 skg.lines = lines;
                 skg.arcs = arcs;
             }
+            skgB.sketchGeometry = skg;
 
-            
-            return skg;
+            SketchGeometry bodyParent = new SketchGeometry();
+            //GetBody visible along with Sketch
+            List<LineVO> edges = new List<LineVO>();
+            List<PointVO> pointsBody = new List<PointVO>();
+            List<ArcVO> arcsBody = new List<ArcVO>();
+
+            List<Feature> parents = allFeatures[sketchName];
+            if (parents != null)
+            {
+                foreach (Feature parent in parents)
+                {
+                    object[] facesArray = parent.GetFaces();
+                    if (facesArray != null && facesArray.Length > 0)
+                    {
+                        Face parentFace = (Face)facesArray[0];
+                        if (parentFace != null)
+                        {
+                            //  Feature p = parent.GetFaces();
+                            Body2 body = parentFace.GetBody();
+                            if (body != null)
+                            {
+                                //      sketchBodyList.Add(getBodyFromFace(parentFace, swModel));
+                               bodyParent = (getBodyFromSketch(body, swModel));
+
+                            }
+                        }
+                    }
+                }
+
+            }
+            /*     swModel.Extension.SelectAll();
+                 for (int i = 0; i < (swSelMgr.GetSelectedObjectCount2(-1) - 1); i++)
+                 {
+                     dynamic obj = swSelMgr.GetSelectedObject2(i + 1);
+                     try
+                     {
+                         Edge e = (Edge)obj;
+                         edges.Add(getLine(e, swModel));
+                     }
+                     catch (Exception e)
+                     {
+                         Console.WriteLine("Not a edge");
+                     }
+
+                     try
+                     {
+                      //   Point p = (Point)obj;
+
+                     }
+                     catch (Exception e)
+                     {
+
+                         Console.WriteLine("Not a point");
+                     }
+                     try
+                     {
+                         SketchArc arc = (SketchArc)obj;
+                         arcsBody.Add(getArc(arc, swModel));
+                     }
+                     catch (Exception e)
+                     {
+                         Console.WriteLine("Not an arc");
+                     }
+
+
+
+                 }*/
+            skgB.sketchBodies = bodyParent;
+            return skgB;
         }
 
        static ArcVO getArc(SketchArc skArc, ModelDoc2 swModel)
