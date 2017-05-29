@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="ArcVO.cs" />
     <Compile Include="CircleVO.cs" />
+    <Compile Include="DimensionalRelation.cs" />
     <Compile Include="FixedRelationVO.cs" />
     <Compile Include="GeometryEntity.cs" />
     <Compile Include="LineVO.cs" />

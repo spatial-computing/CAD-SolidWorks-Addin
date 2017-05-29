@@ -34,12 +34,12 @@ namespace RelationFixerApp
 
 
             if (mode.Equals("0"))
-            {
+            {   
                 string text2 = File.ReadAllText(folderPath + "\\" + fileName + ".invalid.json", Encoding.UTF8);
                 PartVO invalidPart = new JavaScriptSerializer().Deserialize<PartVO>(text2);
-
+                //Original Code to compare fully defined relations to find the changes
                 //Extract Relations From Part
-                foreach (SketchVO sketchVO in invalidPart.sketches)
+                /*foreach (SketchVO sketchVO in invalidPart.sketches)
                 {
                     invalidRelations.AddRange(sketchVO.relations);
                 }
@@ -60,8 +60,13 @@ namespace RelationFixerApp
                 {
                     var json = new JavaScriptSerializer().Serialize(relationsMissing);
                     file.WriteLine(json);
-                }
-            }else
+                }*/
+
+
+
+
+            }
+            else
             {
                 //Mode 1
                 //Comapre Geometry
