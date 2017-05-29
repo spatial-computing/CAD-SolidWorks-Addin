@@ -9,9 +9,12 @@ namespace RelationFixerApp
 {
     class SketchVO
     {
-       public string name { get; set; }
-        public Object swSketch { get; set; }
+        public string name { get; set; }
         public List<RelationVO> relations = new List<RelationVO>();
+
         public SketchGeometry geometry;
+
+        
+        public Object swSketch;
     }
 }

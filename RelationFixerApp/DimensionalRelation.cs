@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace RelationFixerApp
 {
-    class PartVO
+    class DimensionalRelation
     {
-        public String name;
-        public List<SketchVO> sketches = new List<SketchVO>();
-        public List<SketchBodyVO> sketchBodies;
+      public GeometryEntity entity1;
+      public  GeometryEntity entity2;
+        int type;
+        public string sketchName;
     }
 }

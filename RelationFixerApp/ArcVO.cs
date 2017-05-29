@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace RelationFixerApp
 {
-    class ArcVO: IEquatable<ArcVO>
+    class ArcVO: IEquatable<ArcVO>, GeometryEntity
     {
-       public double radius;
-       public PointVO centre;
-       public PointVO start;
-       public PointVO end;
-       public double[] normalVector;
+        public byte[] id;
+        public double radius;
+        public PointVO centre;
+        public PointVO start;
+        public PointVO end;
 
         public bool Equals(ArcVO other)
         {
@@ -23,6 +23,7 @@ namespace RelationFixerApp
                    (this.end == other.end) 
                    ;
         }
+
 
     }
 }
