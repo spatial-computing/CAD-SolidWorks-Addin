@@ -947,7 +947,7 @@ namespace TestSolidWorksAddin
                 partVO.sketchBodies = getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
-                    fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
+                //    fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
                     partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
@@ -988,7 +988,7 @@ namespace TestSolidWorksAddin
                partVO.sketchBodies= getAllSketchesWithBody(swPart);
                 for (int i = 0; i < partVO.sketches.Count; i++)
                 {
-                    fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
+               //     fullyDefineSketch(partVO.sketches.ElementAt(i), swModel);
                     getRelationsFromSketch(partVO.sketches.ElementAt(i));
                     partVO.sketches.ElementAt(i).geometry = getGeometryFromSketch((partVO.sketches.ElementAt(i)));
                     swModel.Extension.RunCommand((int)swCommands_e.swCommands_Edit_Exit_No_Save, "");
