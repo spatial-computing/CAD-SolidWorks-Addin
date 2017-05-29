@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace RelationFixerApp
 {
-    class DimensionalRelation
+    class SketchBodyVO :SketchVO
     {
-      public GeometryEntity entity1;
-      public  GeometryEntity entity2;
-        int type;
-        public string sketchName;
+
+        public SketchGeometry sketchBodies;
+        public SketchGeometry sketchGeometry;
+
     }
 }

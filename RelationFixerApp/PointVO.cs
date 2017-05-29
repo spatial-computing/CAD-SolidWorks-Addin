@@ -8,12 +8,12 @@ namespace RelationFixerApp
 {
     class PointVO : IEquatable<PointVO>, GeometryEntity
     {
-       public object id;
+        public byte[] id;
         public String key;
-       public double x;
-       public double y;
-       public double z;
-    
+        public double x;
+        public double y;
+        public double z;
+
         public PointVO() { }
 
         public PointVO(double x, double y, double z)

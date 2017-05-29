@@ -8,7 +8,8 @@ namespace RelationFixerApp
 {
     class PartVO
     {
-        public string name { get; set; }
-      public  List<SketchVO> sketches = new List<SketchVO>();
+        public String name;
+        public List<SketchVO> sketches = new List<SketchVO>();
+        public List<SketchBodyVO> sketchBodies;
     }
 }

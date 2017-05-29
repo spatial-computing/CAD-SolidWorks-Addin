@@ -9,7 +9,7 @@ namespace TestSolidWorksAddin
     class SketchBodyVO :SketchVO
     {
 
-      public  List<SketchGeometry> sketchBodies;
+      public  SketchGeometry sketchBodies;
       public  SketchGeometry sketchGeometry;
         
     }

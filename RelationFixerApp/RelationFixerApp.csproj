@@ -79,6 +79,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="RelationVO.cs" />
+    <Compile Include="SketchBodyVO.cs" />
     <Compile Include="SketchGeometry.cs" />
     <Compile Include="SketchRelationEntityVO.cs" />
     <Compile Include="SketchVO.cs" />
