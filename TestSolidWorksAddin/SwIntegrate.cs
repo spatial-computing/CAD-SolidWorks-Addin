@@ -43,10 +43,9 @@ namespace TestSolidWorksAddin
         {
             try
             {
-       //         mSWApplication.ActiveDocChangeNotify += new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(ActiveDocChangeNotify);
+        //        mSWApplication.ActiveDocChangeNotify += new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(ActiveDocChangeNotify);
                 mSWApplication.DocumentLoadNotify2 += new DSldWorksEvents_DocumentLoadNotify2EventHandler(DocumentLoadNotify2);
        //         mSWApplication.FileNewNotify2 += new DSldWorksEvents_FileNewNotify2EventHandler(FileNewNotify2);
-        //        mSWApplication.ActiveModelDocChangeNotify += new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(ActiveModelDocChangeNotify);
                 mSWApplication.FileOpenPostNotify += new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
          //       mSWApplication.FileOpenPreNotify += new DSldWorksEvents_FileOpenPreNotifyEventHandler(FileOpenPreNotify);
                 return true;
@@ -58,6 +57,8 @@ namespace TestSolidWorksAddin
             }
         }
 
+    
+
         public int DocumentLoadNotify2(string docTitle, string docPath)
         {
             return 0;
@@ -65,7 +66,8 @@ namespace TestSolidWorksAddin
 
         int FileOpenPostNotify(string FileName)
         {
-            
+          
+            SWTaskpaneHost.extractValidSketch(mSWApplication);
             return 0;
         }
 
@@ -79,7 +81,7 @@ namespace TestSolidWorksAddin
         {
             mTaskpaneView = mSWApplication.CreateTaskpaneView2(string.Empty, "Woo! My first SwAddin");
             mTaskpaneHost = (SWTaskpaneHost)mTaskpaneView.AddControl(SWTaskpaneHost.SWTASKPANE_PROGID, "");
-            mTaskpaneHost.mSWApplication = mSWApplication;
+            SWTaskpaneHost.mSWApplication = mSWApplication;
         }
         private void UITeardown()
         {

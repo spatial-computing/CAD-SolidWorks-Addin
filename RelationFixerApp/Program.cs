@@ -37,7 +37,7 @@ namespace RelationFixerApp
             {
                 try
                 {
-                    Directory.Delete(folderPath + "\\" + fileName, true);
+                    Directory.Delete(folderPath + "\\" + fileName+"_Temp", true);
                 }catch(IOException e)
                 {
                     Console.WriteLine("Directory doesn't exist? " + e);
